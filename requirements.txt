@@ -4,3 +4,4 @@ vaderSentiment==3.3.2
 textblob==0.17.1
 pydantic==2.5.0
 langdetect==1.0.9
+psutil==5.9.6

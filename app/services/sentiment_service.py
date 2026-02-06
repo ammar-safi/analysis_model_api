@@ -2,6 +2,7 @@
 Sentiment Analysis Service using VADER
 """
 import re
+import time
 from typing import Dict, Any, Optional
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from datetime import datetime
@@ -33,16 +34,19 @@ class SentimentService:
         self.MIN_WORDS_FOR_RELIABLE_ANALYSIS = 3
         self.MAX_SYMBOL_RATIO = 0.7  # Maximum ratio of symbols to text length
         
-    def analyze_sentiment(self, text: str) -> SentimentResult:
+    def analyze_sentiment(self, text: str, request_state=None) -> SentimentResult:
         """
         Analyze sentiment of the given text with special case handling
         
         Args:
             text: Input text to analyze
+            request_state: Optional request state for tracking cache hits
             
         Returns:
             SentimentResult with sentiment classification and confidence
         """
+        start_time = time.time()
+        
         # Handle empty or None text
         if not text or not text.strip():
             return SentimentResult(
@@ -57,7 +61,14 @@ class SentimentService:
         cache_key = self.cache_manager.generate_sentiment_key(text)
         cached_result = self.cache_manager.get(cache_key)
         if cached_result is not None:
+            # Mark cache hit in request state if available
+            if request_state:
+                request_state.cache_hit = True
             return cached_result
+        
+        # Mark cache miss in request state if available
+        if request_state:
+            request_state.cache_hit = False
         
         # Check text length constraints
         text_length_check = self._check_text_length(text)

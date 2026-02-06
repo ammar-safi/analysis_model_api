@@ -2,6 +2,7 @@
 Stance Analysis Service for detecting stance towards specific targets
 """
 import re
+import time
 from typing import Dict, Any, Optional, List, Tuple
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from datetime import datetime
@@ -67,17 +68,20 @@ class StanceService:
                               'neither', 'nor', 'none', "don't", "doesn't", "didn't", 
                               "won't", "wouldn't", "can't", "couldn't", "shouldn't"]
     
-    def analyze_stance(self, text: str, target: str) -> StanceResult:
+    def analyze_stance(self, text: str, target: str, request_state=None) -> StanceResult:
         """
         Analyze stance towards a specific target in the given text
         
         Args:
             text: Input text to analyze
             target: Target entity to analyze stance towards
+            request_state: Optional request state for tracking cache hits
             
         Returns:
             StanceResult with stance classification and confidence
         """
+        start_time = time.time()
+        
         # Handle empty or None inputs
         if not text or not text.strip():
             return StanceResult(
@@ -101,7 +105,14 @@ class StanceService:
         cache_key = self.cache_manager.generate_stance_key(text, target)
         cached_result = self.cache_manager.get(cache_key)
         if cached_result is not None:
+            # Mark cache hit in request state if available
+            if request_state:
+                request_state.cache_hit = True
             return cached_result
+        
+        # Mark cache miss in request state if available
+        if request_state:
+            request_state.cache_hit = False
         
         # Check text length constraints
         text_length_check = self._check_text_length(text, target)
