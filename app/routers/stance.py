@@ -72,7 +72,7 @@ async def analyze_stance(
             )
         
         # Analyze stance
-        result = stance_service.analyze_stance(request.text, request.target, request.state)
+        result = stance_service.analyze_stance(request.text, request.target)
         
         # Log warning if fallback was used
         if result.fallback_used and result.warning:

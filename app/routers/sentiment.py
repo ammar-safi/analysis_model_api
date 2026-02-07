@@ -63,7 +63,7 @@ async def analyze_sentiment(
             )
         
         # Analyze sentiment
-        result = sentiment_service.analyze_sentiment(request.text, request.state)
+        result = sentiment_service.analyze_sentiment(request.text)
         
         # Log warning if fallback was used
         if result.fallback_used and result.warning:
